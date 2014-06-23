@@ -1,0 +1,124 @@
+# Maintainer: Jure Kobal <j dot kobal at gmx dot com>
+
+pkgbase=postgres-xc
+pkgname=('postgres-xc-1.2')
+pkgver=1.2.1
+_majorver=${pkgver%.*}
+pkgrel=1
+arch=('i686' 'x86_64')
+url="http://postgres-xc.sourceforge.net/"
+license=('BSD')
+makedepends=('krb5' 'libxml2' 'python2' 'perl' 'tcl>=8.6.0' 'openssl>=1.0.0' 'jade')
+source=(http://sourceforge.net/projects/postgres-xc/files/Version_1.2/pgxc-v1.2.1.tar.gz
+        postgres-xc-run-socket.patch
+        postgres-xc.logrotate
+        postgres-xc.pam
+        postgres-xc-1.2@.service
+        postgres-xc-gtm-1.2@.service
+        postgres-xc-coord-1.2@.service
+        postgres-xc.tmpfiles.conf
+        postgres-xc.install)
+sha256sums=('e683e7f4ed8fcf23bccdd3c1cd6d3b4a367957d96f046d1f731c9028534d8ef1'
+            '0fadc054b3bc865f42ffbc6c6679e94c17f1206b683a59cbe8e95082a73efa96'
+            '6abb842764bbed74ea4a269d24f1e73d1c0b1d8ecd6e2e6fb5fb10590298605e'
+            '57dfd072fd7ef0018c6b0a798367aac1abb5979060ff3f9df22d1048bb71c0d5'
+            '49d12fa973b2c5c300bc57a37d4bd9103eb9fcbec8d65c840872c02c2c308c77'
+            '1a37311541e0da52d801ebb7e7a88ad3c81f5b2497272c233b8d4a1e7c9d9773'
+            '78121d9936b1fdc50febcba3ce05747d79cbb3c3cd69867a414eae56ee9cc82e'
+            'c078934b75e7ff73dec2f1938bdbe4af5a004a60a7784e25ea18cd8771c8b89d'
+            '901a53bda266f1adc2bb5f48a62d40391bcf1bc9940f1d9aa09d9cc1e5662039')
+
+build() {
+  mv "${srcdir}/postgres-xc-${pkgver}" "${srcdir}/${pkgbase}"
+  cd "${srcdir}/${pkgbase}"
+
+  patch -Np1 < ../postgres-xc-run-socket.patch
+  
+  ./configure --prefix=/opt/postgres-xc-"${_majorver}" \
+  --mandir=/usr/share/man \
+  --datadir=/usr/share/postgres-xc \
+  --sysconfdir=/etc \
+  --with-krb5 \
+  --with-libxml \
+  --with-openssl \
+  --with-perl \
+  --with-python PYTHON=/usr/bin/python2 \
+  --with-tcl \
+  --with-pam \
+  --with-system-tzdata=/usr/share/zoneinfo \
+  --enable-nls \
+  --enable-thread-safety \
+  --docdir='${datarootdir}/doc/${PACKAGE_TARNAME}' \
+  JADE=jade
+
+  # we use make all since world fails on docs
+  make all
+}
+
+# commented till there will be an easy way to get documentation build
+#package_postgres-xc-docs() {
+#  pkgdesc="HTML documentation for PostgreSQL"
+#  options=(docs)
+#
+#  cd "${srcdir}/${pkgbase}"
+#
+#  # install license
+#  install -D -m644 COPYRIGHT "${pkgdir}/usr/share/licenses/postgresql-docs/LICENSE"
+#
+#  make -C doc-xc/src/sgml DESTDIR="${pkgdir}" install-html
+#  chown -R root:root "${pkgdir}/usr/share/doc/postgresql/html/"
+#
+#  # clean up
+#  rmdir "${pkgdir}"/usr/share/man/man{1,3,7}
+#  rmdir "${pkgdir}"/usr/share/man
+#}
+
+package_postgres-xc-1.2() {
+  pkgdesc="A sophisticated object-relational DBMS"
+  backup=('etc/pam.d/postgres-xc' 'etc/logrotate.d/postgres-xc')
+  depends=('postgresql-libs>=9.3' 'krb5' 'libxml2' 'readline>=6.0' 'openssl>=1.0.0')
+  optdepends=('python2: for PL/Python support'
+              'perl: for PL/Perl support'
+              'tcl: for PL/Tcl support'
+              'postgresql-old-upgrade: upgrade from previous major version using pg_upgrade')
+  install=postgres-xc.install
+
+  cd "${srcdir}/${pkgbase}"
+
+  # install
+  make DESTDIR="${pkgdir}" install
+  make -C contrib DESTDIR="${pkgdir}" install
+  #make -C doc-xc/src/sgml DESTDIR="${pkgdir}" install-man
+
+  # we don't want these, they are in the -libs package
+  for dir in src/interfaces src/bin/pg_config src/bin/psql src/bin/pg_dump; do
+    make -C ${dir} DESTDIR="${pkgdir}" uninstall
+  done
+
+  # install license
+  install -D -m644 COPYRIGHT "${pkgdir}/usr/share/licenses/${pkgbase}/LICENSE"
+
+  # clean up unneeded installed items
+  rm -rf "${pkgdir}/usr/include/postgresql/internal"
+  rm -rf "${pkgdir}/usr/include/libpq"
+  find "${pkgdir}/opt/postgres-xc-${_majorver}/include" -maxdepth 1 -type f -execdir rm {} +
+  #rmdir "${pkgdir}/usr/share/doc/postgresql/html"
+
+  install -D -m644 "${srcdir}/postgres-xc.tmpfiles.conf" \
+    "${pkgdir}/usr/lib/tmpfiles.d/postgres-xc.conf"
+  install -D -m644 "${srcdir}/postgres-xc-1.2@.service" \
+    "${pkgdir}/usr/lib/systemd/system/postgres-xc-1.2@.service"
+  install -D -m644 "${srcdir}/postgres-xc-gtm-1.2@.service" \
+    "${pkgdir}/usr/lib/systemd/system/postgres-xc-gtm-1.2@.service"
+  install -D -m644 "${srcdir}/postgres-xc-coord-1.2@.service" \
+    "${pkgdir}/usr/lib/systemd/system/postgres-xc-coord-1.2@.service"
+
+  #install -D -m755 "${srcdir}/postgresql-check-db-dir" \
+  #  "${pkgdir}/usr/bin/postgresql-check-db-dir"
+
+  install -D -m644 "${srcdir}/postgres-xc.pam" \
+    "${pkgdir}/etc/pam.d/postgres-xc"
+
+  install -D -m644 "${srcdir}/postgres-xc.logrotate" \
+    "${pkgdir}/etc/logrotate.d/postgres-xc"
+}

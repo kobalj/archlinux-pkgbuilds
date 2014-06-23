@@ -1,0 +1,26 @@
+[Unit]
+Description=Postgres-XC (%i) GTM server
+After=network.target
+
+[Service]
+Type=forking
+TimeoutSec=120
+User=postgres
+Group=postgres
+
+Environment=PGVER=1.2
+Environment=PGROOT=/var/lib/postgres/xc/${PGVER}/%i
+
+SyslogIdentifier=pgxc-${PGVER}-%i
+PIDFile=${PGROOT}/data/postmaster.pid
+
+ExecStart= /opt/postgres-xc-${PGVER}/bin/gtm_ctl -D ${PGROOT} start -Z gtm -w -t 120
+ExecReload=/opt/postgres-xc-${PGVER}/bin/gtm_ctl -D ${PGROOT} restart
+ExecStop=  /opt/postgres-xc-${PGVER}/bin/gtm_ctl -D ${PGROOT} stop -m fast
+
+# Due to PostgreSQL's use of shared memory, OOM killer is often overzealous in
+# killing Postgres, so adjust it downward
+OOMScoreAdjust=-200
+
+[Install]
+WantedBy=multi-user.target
