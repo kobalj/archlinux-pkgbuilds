@@ -1,0 +1,76 @@
+# Maintainer: Jure Kobal <j dot kobal at gmx dot com>
+
+pkgbase=postgres-xc
+pkgname=('postgres-xc-libs')
+pkgver=1.2.1
+_majorver=${pkgver%.*}
+pkgrel=1
+arch=('i686' 'x86_64')
+url="http://postgres-xc.sourceforge.net/"
+license=('BSD')
+makedepends=('krb5' 'libxml2' 'python2' 'perl' 'tcl>=8.6.0' 'openssl>=1.0.0' 'jade')
+source=(http://sourceforge.net/projects/postgres-xc/files/Version_1.2/pgxc-v1.2.1.tar.gz)
+sha256sums=('e683e7f4ed8fcf23bccdd3c1cd6d3b4a367957d96f046d1f731c9028534d8ef1')
+
+build() {
+  mv "${srcdir}/postgres-xc-${pkgver}" "${srcdir}/${pkgbase}"
+  cd "${srcdir}/${pkgbase}"
+
+  ./configure --prefix=/usr \
+  --mandir=/usr/share/man \
+  --datadir=/usr/share/postgres-xc \
+  --sysconfdir=/etc \
+  --with-krb5 \
+  --with-libxml \
+  --with-openssl \
+  --with-perl \
+  --with-python PYTHON=/usr/bin/python2 \
+  --with-tcl \
+  --with-pam \
+  --with-system-tzdata=/usr/share/zoneinfo \
+  --enable-nls \
+  --enable-thread-safety \
+  --docdir='${datarootdir}/doc/${PACKAGE_TARNAME}'
+
+  make -C src/bin
+  make -C src/include
+  make -C src/interfaces
+}
+
+package_postgres-xc-libs() {
+  pkgdesc="Libraries for use with PostgreSQL and Postgres-XC"
+  depends=('krb5' 'openssl>=1.0.0' 'readline>=6.0')
+  provides=('postgresql-client' 'postgresql-libs-9.3.4' 'postgres-xc-libs')
+  conflicts=('postgresql-client')
+
+  cd "${srcdir}/${pkgbase}"
+
+  # install license
+  install -D -m644 COPYRIGHT "${pkgdir}/usr/share/licenses/postgresql-libs/LICENSE"
+
+  # install libs
+  for dir in src/interfaces src/bin/pg_config src/bin/psql; do
+    make -C ${dir} DESTDIR="${pkgdir}" install
+  done
+
+  install -D -m644 doc-xc/src/sgml/man1/pg_config.1 "${pkgdir}/usr/share/man/man1/pg_config.1"
+  install -D -m644 doc-xc/src/sgml/man1/psql.1 "${pkgdir}/usr/share/man/man1/psql.1"
+
+  cd src/include
+
+  mkdir -p "${pkgdir}"/usr/include/{libpq,postgresql/internal/libpq}
+
+  # these headers are needed by the public headers of the interfaces
+  install -m644 pg_config.h "${pkgdir}/usr/include/"
+  install -m644 pg_config_os.h "${pkgdir}/usr/include/"
+  install -m644 postgres_ext.h "${pkgdir}/usr/include/"
+  install -m644 libpq/libpq-fs.h "${pkgdir}/usr/include/libpq/"
+  install -m644 pg_config_manual.h "${pkgdir}/usr/include/"
+
+  # these headers are needed by the not-so-public headers of the interfaces
+  install -m644 c.h "${pkgdir}/usr/include/postgresql/internal/"
+  install -m644 port.h "${pkgdir}/usr/include/postgresql/internal/"
+  install -m644 postgres_fe.h "${pkgdir}/usr/include/postgresql/internal/"
+  install -m644 libpq/pqcomm.h "${pkgdir}/usr/include/postgresql/internal/libpq/"
+}
+
