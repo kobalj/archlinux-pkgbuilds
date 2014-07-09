@@ -8,15 +8,14 @@ TimeoutSec=120
 User=postgres
 Group=postgres
 
-Environment=PGVER=1.2
-Environment=PGROOT=/var/lib/postgres/xc/${PGVER}/%i
+Environment=PGROOT=/var/lib/postgres/xc/1.2/%i
 
-SyslogIdentifier=pgxc-${PGVER}-%i
-PIDFile=${PGROOT}/data/postmaster.pid
+SyslogIdentifier=pgxc-1.2-%i
+PIDFile=${PGROOT}/postmaster.pid
 
-ExecStart= /opt/postgres-xc-${PGVER}/bin/pg_ctl -s -Z "datanode" -D ${PGROOT} start -w -t 120
-ExecReload=/opt/postgres-xc-${PGVER}/bin/pg_ctl -s -D ${PGROOT} reload
-ExecStop=  /opt/postgres-xc-${PGVER}/bin/pg_ctl -s -D ${PGROOT} stop -m fast
+ExecStart= /opt/postgres-xc-1.2/bin/pg_ctl -s -Z "datanode" -D ${PGROOT} start -w -t 120
+ExecReload=/opt/postgres-xc-1.2/bin/pg_ctl -s -D ${PGROOT} reload
+ExecStop=  /opt/postgres-xc-1.2/bin/pg_ctl -s -D ${PGROOT} stop -m fast
 
 # Due to PostgreSQL's use of shared memory, OOM killer is often overzealous in
 # killing Postgres, so adjust it downward
