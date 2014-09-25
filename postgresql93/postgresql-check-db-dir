@@ -15,7 +15,7 @@ then
     exit 1
 fi
 
-if [ -d "$PGDATA/base" ]
+if [ ! -d "$PGDATA/base" ]
 then
     # No existing PGDATA! Warn the user to initdb it.
     echo $"\"$PGDATA\" is missing or empty. Use a command like"

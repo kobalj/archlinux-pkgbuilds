@@ -11,7 +11,7 @@ Group=postgres
 Environment=PGROOT=/var/lib/postgres/9.3
 
 SyslogIdentifier=postgres93
-PIDFile=/var/lib/postgres/data/postmaster93.pid
+PIDFile=/var/lib/postgres/9.3/data/postmaster.pid
 
 ExecStartPre=/usr/local/postgresql-9.3/bin/postgresql-check-db-dir ${PGROOT}/data
 ExecStart= /usr/local/postgresql-9.3/bin/pg_ctl -s -D ${PGROOT}/data start -w -t 120

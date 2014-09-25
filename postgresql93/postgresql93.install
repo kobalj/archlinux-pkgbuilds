@@ -13,7 +13,7 @@ post_install() {
     mkdir -p '/var/lib/postgres/9.3'
     chown postgres:postgres '/var/lib/postgres/9.3'
   fi
-  systemd-tmpfiles --create postgresql.conf
+  systemd-tmpfiles --create postgresql93.conf
   if [ ! -d '/var/lib/postgres/9.3/data' ]; then
     mkdir -p '/var/lib/postgres/9.3/data'
     chown postgres:postgres '/var/lib/postgres/9.3/data'
