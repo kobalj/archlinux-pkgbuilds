@@ -1,8 +1,8 @@
 # $Id$
 # Maintainer: Jure Kobal <j dot kobal at gmx dot com>
 
-pkgbase=postgresql93
-pkgname=('postgresql93-libs' 'postgresql93-docs' 'postgresql93')
+pkgbase=postgresql9.3
+pkgname=('postgresql9.3-libs' 'postgresql9.3-docs' 'postgresql9.3')
 pkgver=9.3.5
 _majorver=${pkgver%.*}
 pkgrel=1
@@ -13,7 +13,7 @@ makedepends=('krb5' 'libxml2' 'python2' 'perl' 'tcl>=8.6.0' 'openssl>=1.0.0')
 source=(http://ftp.postgresql.org/pub/source/v${pkgver}/postgresql-${pkgver}.tar.bz2
         postgresql-run-socket.patch
         postgresql.pam postgresql.logrotate
-        postgresql93.service postgresql93.tmpfiles.conf postgresql-check-db-dir)
+        postgresql9.3.service postgresql9.3.tmpfiles.conf postgresql-check-db-dir)
 md5sums=('5059857c7d7e6ad83b6d55893a121b59'
          '75c579eed03ffb2312631f0b649175b4'
          '96f82c38f3f540b53f3e5144900acf17'
@@ -57,10 +57,10 @@ build() {
   make world
 }
 
-package_postgresql93-libs() {
+package_postgresql9.3-libs() {
   pkgdesc="Libraries for use with PostgreSQL"
   depends=('krb5' 'openssl>=1.0.0' 'readline>=6.0')
-  provides=('postgresql93-client')
+  provides=('postgresql9.3-client')
 
   cd "${srcdir}/postgresql-${pkgver}"
 
@@ -97,7 +97,7 @@ package_postgresql93-libs() {
   install -m644 libpq/pqcomm.h "${pkgdir}/usr/local/${_pkginsmap}/include/postgresql/internal/libpq/"
 }
 
-package_postgresql93-docs() {
+package_postgresql9.3-docs() {
   pkgdesc="HTML documentation for PostgreSQL"
   options=('docs')
 
@@ -114,15 +114,15 @@ package_postgresql93-docs() {
   rmdir "${pkgdir}"/usr/local/${_pkginsmap}/share/man
 }
 
-package_postgresql93() {
+package_postgresql9.3() {
   pkgdesc="A sophisticated object-relational DBMS"
   backup=('etc/pam.d/postgresql' 'etc/logrotate.d/postgresql')
-  depends=("postgresql93-libs>=${pkgver}" 'krb5' 'libxml2' 'readline>=6.0' 'openssl>=1.0.0')
+  depends=("postgresql9.3-libs>=${pkgver}" 'krb5' 'libxml2' 'readline>=6.0' 'openssl>=1.0.0')
   optdepends=('python2: for PL/Python support'
               'perl: for PL/Perl support'
               'tcl: for PL/Tcl support')
   options=('staticlibs')
-  install=postgresql93.install
+  install=postgresql9.3.install
 
   cd "${srcdir}/postgresql-${pkgver}"
 
@@ -150,10 +150,10 @@ package_postgresql93() {
   find "${pkgdir}/usr//local/${_pkginsmap}/include" -maxdepth 1 -type f -execdir rm {} +
   rmdir "${pkgdir}/usr/local/${_pkginsmap}/share/doc/postgresql/html"
 
-  install -D -m644 "${srcdir}/postgresql93.tmpfiles.conf" \
-    "${pkgdir}/usr/lib/tmpfiles.d/postgresql93.conf"
-  install -D -m644 "${srcdir}/postgresql93.service" \
-    "${pkgdir}/usr/lib/systemd/system/postgresql93.service"
+  install -D -m644 "${srcdir}/postgresql9.3.tmpfiles.conf" \
+    "${pkgdir}/usr/lib/tmpfiles.d/postgresql9.3.conf"
+  install -D -m644 "${srcdir}/postgresql9.3.service" \
+    "${pkgdir}/usr/lib/systemd/system/postgresql9.3.service"
   install -D -m755 "${srcdir}/postgresql-check-db-dir" \
     "${pkgdir}/usr/local/${_pkginsmap}/bin/postgresql-check-db-dir"
 
