@@ -41,6 +41,7 @@ build() {
   --mandir=/usr/local/${_pkginsmap}/share/man \
   --datadir=/usr/local/${_pkginsmap}/share/postgresql \
   --docdir=/usr/local/${_pkginsmap}/share/doc/postgresql \
+  --includedir=/usr/local/${_pkginsmap}/include/postgresql \
   --sysconfdir=/etc \
   --with-krb5 \
   --with-gssapi \
@@ -147,7 +148,7 @@ package_postgresql9.3() {
   # clean up unneeded installed items
   rm -rf "${pkgdir}/usr/local/${_pkginsmap}/include/postgresql/internal"
   rm -rf "${pkgdir}/usr/local/${_pkginsmap}/include/libpq"
-  find "${pkgdir}/usr//local/${_pkginsmap}/include" -maxdepth 1 -type f -execdir rm {} +
+  find "${pkgdir}/usr/local/${_pkginsmap}/include" -maxdepth 1 -type f -execdir rm {} +
   rmdir "${pkgdir}/usr/local/${_pkginsmap}/share/doc/postgresql/html"
 
   install -D -m644 "${srcdir}/postgresql9.3.tmpfiles.conf" \
