@@ -12,19 +12,14 @@ license=('custom:PostgreSQL')
 makedepends=('krb5' 'libxml2' 'python2' 'perl' 'tcl>=8.6.0' 'openssl>=1.0.0')
 source=(http://ftp.postgresql.org/pub/source/v${pkgver}/postgresql-${pkgver}.tar.bz2
         postgresql-run-socket.patch
-        postgresql.pam postgresql.logrotate
         postgresql9.3.service postgresql9.3.tmpfiles.conf postgresql-check-db-dir)
 md5sums=('5059857c7d7e6ad83b6d55893a121b59'
          '75c579eed03ffb2312631f0b649175b4'
-         '96f82c38f3f540b53f3e5144900acf17'
-         'd28e443f9f65a5712c52018b84e27137'
          '1f3da7c718fa2086bd2629eeb873e82e'
          '1c5a1f99e8e93776c593c468e2612985'
          'd1cc59baa2d169862e68a07a26f60833')
 sha256sums=('14176ffb1f90a189e7626214365be08ea2bfc26f26994bafb4235be314b9b4b0'
             '8538619cb8bea51078b605ad64fe22abd6050373c7ae3ad6595178da52f6a7d9'
-            '57dfd072fd7ef0018c6b0a798367aac1abb5979060ff3f9df22d1048bb71c0d5'
-            '6abb842764bbed74ea4a269d24f1e73d1c0b1d8ecd6e2e6fb5fb10590298605e'
             'f468655737318c434b7decc542fce9abfb3a9e2e22af178ab3a5c99d54c1657f'
             '7e086d70e0dcaa6ce45693b4e826ce92d770192b3aff5642319b1ef279d88dc4'
             '28c5b3820e1e4cdd643b19f3f61b4a1b044388570e3421a205404c789af733df')
@@ -117,8 +112,7 @@ package_postgresql9.3-docs() {
 
 package_postgresql9.3() {
   pkgdesc="A sophisticated object-relational DBMS"
-  backup=('etc/pam.d/postgresql' 'etc/logrotate.d/postgresql')
-  depends=("postgresql9.3-libs>=${pkgver}" 'krb5' 'libxml2' 'readline>=6.0' 'openssl>=1.0.0')
+  depends=("postgresql9.3-libs>=${pkgver}" 'postgresql-common'  'krb5' 'libxml2' 'readline>=6.0' 'openssl>=1.0.0')
   optdepends=('python2: for PL/Python support'
               'perl: for PL/Perl support'
               'tcl: for PL/Tcl support')
@@ -157,10 +151,4 @@ package_postgresql9.3() {
     "${pkgdir}/usr/lib/systemd/system/postgresql9.3.service"
   install -D -m755 "${srcdir}/postgresql-check-db-dir" \
     "${pkgdir}/usr/local/${_pkginsmap}/bin/postgresql-check-db-dir"
-
-  install -D -m644 "${srcdir}/postgresql.pam" \
-    "${pkgdir}/etc/pam.d/postgresql"
-
-  install -D -m644 "${srcdir}/postgresql.logrotate" \
-    "${pkgdir}/etc/logrotate.d/postgresql"
 }
