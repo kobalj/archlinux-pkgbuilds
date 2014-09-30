@@ -30,11 +30,11 @@ post_upgrade() {
 }
 
 # we don't remove the user on uninstall
-#post_remove() {
+post_remove() {
 #  if getent passwd postgres >/dev/null; then
 #    userdel postgres
 #  fi
 #  if getent group postgres >/dev/null; then
 #    groupdel postgres
 #  fi
-#}
+}
