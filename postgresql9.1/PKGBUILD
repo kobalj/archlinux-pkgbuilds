@@ -1,0 +1,153 @@
+# $Id$
+# Maintainer: Jure Kobal <j dot kobal at gmx dot com>
+
+pkgbase=postgresql9.1
+pkgname=('postgresql9.1-libs' 'postgresql9.1-docs' 'postgresql9.1')
+pkgver=9.1.14
+_majorver=${pkgver%.*}
+pkgrel=1
+arch=('i686' 'x86_64')
+url="http://www.postgresql.org/"
+license=('custom:PostgreSQL')
+makedepends=('krb5' 'libxml2' 'python2' 'perl' 'tcl>=8.6.0' 'openssl>=1.0.0')
+source=(http://ftp.postgresql.org/pub/source/v${pkgver}/postgresql-${pkgver}.tar.bz2
+        postgresql-run-socket.patch
+        postgresql9.1.service postgresql9.1.tmpfiles.conf postgresql-check-db-dir)
+md5sums=('34474254fefba82ce09e084a3ebb008d'
+         '75c579eed03ffb2312631f0b649175b4'
+         '8df401498529c171b5a0df4d810e1243'
+         '1c5a1f99e8e93776c593c468e2612985'
+         'd1cc59baa2d169862e68a07a26f60833')
+sha256sums=('d0647ce563d18ae02bf68c5dd646a4c75e8b45b3a4fada64d481371fdc16f522'
+            '8538619cb8bea51078b605ad64fe22abd6050373c7ae3ad6595178da52f6a7d9'
+            '9904466c51931f73c659374bd92f425ccb8ba51c1a9ffdff369f9c618c908df4'
+            '7e086d70e0dcaa6ce45693b4e826ce92d770192b3aff5642319b1ef279d88dc4'
+            '28c5b3820e1e4cdd643b19f3f61b4a1b044388570e3421a205404c789af733df')
+
+# install folder
+_pkginsmap="postgresql-${_majorver}"
+
+build() {
+  cd "${srcdir}/postgresql-${pkgver}"
+ 
+  patch -Np1 < ../postgresql-run-socket.patch
+
+  ./configure --prefix=/usr/local/${_pkginsmap} \
+  --mandir=/usr/local/${_pkginsmap}/share/man \
+  --datadir=/usr/local/${_pkginsmap}/share/postgresql \
+  --docdir=/usr/local/${_pkginsmap}/share/doc/postgresql \
+  --includedir=/usr/local/${_pkginsmap}/include/postgresql \
+  --sysconfdir=/etc \
+  --with-krb5 \
+  --with-gssapi \
+  --with-libxml \
+  --with-openssl \
+  --with-perl \
+  --with-python PYTHON=/usr/bin/python2 \
+  --with-tcl \
+  --with-pam \
+  --with-system-tzdata=/usr/share/zoneinfo \
+  --enable-nls \
+  --enable-thread-safety
+
+  make world
+}
+
+package_postgresql9.1-libs() {
+  pkgdesc="Libraries for use with PostgreSQL"
+  depends=('krb5' 'openssl>=1.0.0' 'readline>=6.0')
+  provides=('postgresql9.1-client')
+
+  cd "${srcdir}/postgresql-${pkgver}"
+
+  # install license
+  install -D -m644 COPYRIGHT "${pkgdir}/usr/share/licenses/${pkgbase}-libs/LICENSE"
+
+  # install libs
+  for dir in src/interfaces src/bin/pg_config src/bin/psql src/bin/pg_dump; do
+    make -C ${dir} DESTDIR="${pkgdir}" install
+  done
+
+  install -D -m644 doc/src/sgml/man1/pg_config.1 "${pkgdir}/usr/local/${_pkginsmap}/share/man/man1/pg_config.1"
+  install -D -m644 doc/src/sgml/man1/pg_dump.1 "${pkgdir}/usr/local/${_pkginsmap}/share/man/man1/pg_dump.1"
+  install -D -m644 doc/src/sgml/man1/pg_dumpall.1 "${pkgdir}/usr/local/${_pkginsmap}/share/man/man1/pg_dumpall.1"
+  install -D -m644 doc/src/sgml/man1/pg_restore.1 "${pkgdir}/usr/local/${_pkginsmap}/share/man/man1/pg_restore.1"
+  install -D -m644 doc/src/sgml/man1/psql.1 "${pkgdir}/usr/local/${_pkginsmap}/share/man/man1/psql.1"
+
+  cd src/include
+
+  mkdir -p "${pkgdir}"/usr/local/${_pkginsmap}/include/{libpq,postgresql/internal/libpq}
+
+  # these headers are needed by the public headers of the interfaces
+  install -m644 pg_config.h "${pkgdir}/usr/local/${_pkginsmap}/include/"
+  install -m644 pg_config_os.h "${pkgdir}/usr/local/${_pkginsmap}/include/"
+  install -m644 postgres_ext.h "${pkgdir}/usr/local/${_pkginsmap}/include/"
+  install -m644 libpq/libpq-fs.h "${pkgdir}/usr/local/${_pkginsmap}/include/libpq/"
+  install -m644 pg_config_manual.h "${pkgdir}/usr/local/${_pkginsmap}/include/"
+
+  # these headers are needed by the not-so-public headers of the interfaces
+  install -m644 c.h "${pkgdir}/usr/local/${_pkginsmap}/include/postgresql/internal/"
+  install -m644 port.h "${pkgdir}/usr/local/${_pkginsmap}/include/postgresql/internal/"
+  install -m644 postgres_fe.h "${pkgdir}/usr/local/${_pkginsmap}/include/postgresql/internal/"
+  install -m644 libpq/pqcomm.h "${pkgdir}/usr/local/${_pkginsmap}/include/postgresql/internal/libpq/"
+}
+
+package_postgresql9.1-docs() {
+  pkgdesc="HTML documentation for PostgreSQL"
+  options=('docs')
+
+  cd "${srcdir}/postgresql-${pkgver}"
+
+  # install license
+  install -D -m644 COPYRIGHT "${pkgdir}/usr/share/licenses/${pkgbase}-docs/LICENSE"
+
+  make -C doc/src/sgml DESTDIR="${pkgdir}" install-html
+  chown -R root:root "${pkgdir}/usr/local/${_pkginsmap}/share/doc/postgresql/html/"
+
+  # clean up
+  rmdir "${pkgdir}"/usr/local/${_pkginsmap}/share/man/man{1,3,7}
+  rmdir "${pkgdir}"/usr/local/${_pkginsmap}/share/man
+}
+
+package_postgresql9.1() {
+  pkgdesc="A sophisticated object-relational DBMS"
+  depends=("postgresql9.1-libs>=${pkgver}" 'postgresql-common' 'krb5' 'libxml2' 'readline>=6.0' 'openssl>=1.0.0')
+  optdepends=('python2: for PL/Python support'
+              'perl: for PL/Perl support'
+              'tcl: for PL/Tcl support')
+  options=('staticlibs')
+  install=postgresql9.1.install
+
+  cd "${srcdir}/postgresql-${pkgver}"
+
+  # install
+  make DESTDIR="${pkgdir}" install
+  make -C contrib DESTDIR="${pkgdir}" install
+  make -C doc/src/sgml DESTDIR="${pkgdir}" install-man
+
+  # we don't want these, they are in the -libs package
+  for dir in src/interfaces src/bin/pg_config src/bin/psql src/bin/pg_dump; do
+    make -C ${dir} DESTDIR="${pkgdir}" uninstall
+  done
+  rm "${pkgdir}/usr/local/${_pkginsmap}/share/man/man1/pg_config.1"
+  rm "${pkgdir}/usr/local/${_pkginsmap}/share/man/man1/pg_dump.1"
+  rm "${pkgdir}/usr/local/${_pkginsmap}/share/man/man1/pg_dumpall.1"
+  rm "${pkgdir}/usr/local/${_pkginsmap}/share/man/man1/pg_restore.1"
+  rm "${pkgdir}/usr/local/${_pkginsmap}/share/man/man1/psql.1"
+
+  # install license
+  install -D -m644 COPYRIGHT "${pkgdir}/usr/share/licenses/${pkgbase}/LICENSE"
+
+  # clean up unneeded installed items
+  rm -rf "${pkgdir}/usr/local/${_pkginsmap}/include/postgresql/internal"
+  rm -rf "${pkgdir}/usr/local/${_pkginsmap}/include/libpq"
+  find "${pkgdir}/usr//local/${_pkginsmap}/include" -maxdepth 1 -type f -execdir rm {} +
+  rmdir "${pkgdir}/usr/local/${_pkginsmap}/share/doc/postgresql/html"
+
+  install -D -m644 "${srcdir}/postgresql9.1.tmpfiles.conf" \
+    "${pkgdir}/usr/lib/tmpfiles.d/postgresql9.1.conf"
+  install -D -m644 "${srcdir}/postgresql9.1.service" \
+    "${pkgdir}/usr/lib/systemd/system/postgresql9.1.service"
+  install -D -m755 "${srcdir}/postgresql-check-db-dir" \
+    "${pkgdir}/usr/local/${_pkginsmap}/bin/postgresql-check-db-dir"
+}
