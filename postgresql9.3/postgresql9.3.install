@@ -29,12 +29,7 @@ post_upgrade() {
   fi
 }
 
-# we don't remove the user on uninstall
+# before remove we check and remove the slot if set
 post_remove() {
-#  if getent passwd postgres >/dev/null; then
-#    userdel postgres
-#  fi
-#  if getent group postgres >/dev/null; then
-#    groupdel postgres
-#  fi
+  /sbin/postgres_slot 9.3
 }

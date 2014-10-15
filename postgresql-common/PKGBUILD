@@ -11,10 +11,14 @@ license=('custom')
 source=(postgresql.pam postgresql.logrotate postgres_slot)
 sha256sums=('57dfd072fd7ef0018c6b0a798367aac1abb5979060ff3f9df22d1048bb71c0d5'
             '6abb842764bbed74ea4a269d24f1e73d1c0b1d8ecd6e2e6fb5fb10590298605e'
-            'ffbac1ede85228887b5af66f585daadfb677d0d27a33da1e56cb0367dbc2d2a1')
+            'a31e0e40a8fb259e2751691de357852591dc70baf9da80e4c4cae1a86547e4a0')
 
 package() {
+  pkgdesc="Common files for PostgreSQL and slot selection."
+  provides=('postgresql-client')  
+  conflicts=('postgresql-client')
   backup=('etc/pam.d/postgresql' 'etc/logrotate.d/postgresql')
+
 
   install -D -m644 ${srcdir}/postgresql.pam \
     "${pkgdir}/etc/pam.d/postgresql"
