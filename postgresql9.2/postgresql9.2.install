@@ -31,5 +31,5 @@ post_upgrade() {
 
 # before remove we check and remove the slot if set
 pre_remove() {
-  /sbin/postgres_slot 9.2
+  /sbin/postgres_slot -u 9.2
 }
