@@ -4,7 +4,7 @@
 pkgbase=postgresql9.4
 pkgname=('postgresql9.4-libs' 'postgresql9.4-docs' 'postgresql9.4')
 pkgver=9.4rc1
-_majorver=${pkgver%b*}
+_majorver=${pkgver%r*}
 pkgrel=1
 arch=('i686' 'x86_64')
 url="http://www.postgresql.org/"
