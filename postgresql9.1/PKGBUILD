@@ -3,7 +3,7 @@
 
 pkgbase=postgresql9.1
 pkgname=('postgresql9.1-libs' 'postgresql9.1-docs' 'postgresql9.1')
-pkgver=9.1.14
+pkgver=9.1.15
 _majorver=${pkgver%.*}
 pkgrel=1
 arch=('i686' 'x86_64')
@@ -13,12 +13,12 @@ makedepends=('krb5' 'libxml2' 'python2' 'perl' 'tcl>=8.6.0' 'openssl>=1.0.0')
 source=(http://ftp.postgresql.org/pub/source/v${pkgver}/postgresql-${pkgver}.tar.bz2
         postgresql-run-socket.patch
         postgresql9.1.service postgresql9.1.tmpfiles.conf postgresql-check-db-dir)
-md5sums=('34474254fefba82ce09e084a3ebb008d'
+md5sums=('6ac52cf13ecf6b09c7d42928d1219cae'
          '75c579eed03ffb2312631f0b649175b4'
          '8df401498529c171b5a0df4d810e1243'
          '1c5a1f99e8e93776c593c468e2612985'
          'd1cc59baa2d169862e68a07a26f60833')
-sha256sums=('d0647ce563d18ae02bf68c5dd646a4c75e8b45b3a4fada64d481371fdc16f522'
+sha256sums=('67d6deaf15cdc35fcdff2c319234d0577a86bce6f363e4f0e4e987e419e0de5f'
             '8538619cb8bea51078b605ad64fe22abd6050373c7ae3ad6595178da52f6a7d9'
             '9904466c51931f73c659374bd92f425ccb8ba51c1a9ffdff369f9c618c908df4'
             '7e086d70e0dcaa6ce45693b4e826ce92d770192b3aff5642319b1ef279d88dc4'
